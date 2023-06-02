@@ -3,6 +3,7 @@ import preprocessor as pp
 import helper
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import seaborn as sns
 
 st.sidebar.title("Whatsapp Chat Analyzer")
 uploaded_file = st.sidebar.file_uploader("Choose a file")
@@ -21,7 +22,7 @@ if uploaded_file is not None:
     df = pp.preprocess(data)
 
     # displaying df
-    st.dataframe(df)
+    # st.dataframe(df)
 
     # fetching unique users
     user_list = df['user'].unique().tolist()
@@ -34,7 +35,7 @@ if uploaded_file is not None:
 
     # show analysis
     if st.sidebar.button('Show Analysis'):
-
+        st.title("Top Statics")
         # User Stats
         num_messages, num_words, num_media, num_urls = helper.fetch_stats(
             selected_user, df)
@@ -53,6 +54,49 @@ if uploaded_file is not None:
         with col4:
             st.header("Urls Shared")
             st.title(num_urls)
+
+        # monthly timeline
+        st.title("Monthly Timeline")
+        timeline = helper.monthly_timeline(selected_user, df)
+        fig, ax = plt.subplots()
+        ax.plot(timeline['time'], timeline['message'], color='green')
+        plt.xticks(rotation='vertical')
+        st.pyplot(fig)
+
+        # daily timeline
+        st.title("Daily Timeline")
+        daily_timeline = helper.daily_timeline(selected_user, df)
+        fig, ax = plt.subplots()
+        ax.plot(daily_timeline['only_date'],
+                daily_timeline['message'], color='black')
+        plt.xticks(rotation='vertical')
+        st.pyplot(fig)
+
+        # week activity map
+        st.title('Activity Map')
+        col1, col2 = st.columns(2)
+        with col1:
+            st.header('Most busy week')
+            busy_week = helper.week_activity_map(selected_user, df)
+            fig, ax = plt.subplots()
+            ax.bar(busy_week.index, busy_week.values, color='c')
+            plt.xticks(rotation='vertical')
+            st.pyplot(fig)
+        with col2:
+            st.header('Most busy month')
+            busy_month = helper.monthly_activity_map(selected_user, df)
+            fig, ax = plt.subplots()
+            ax.bar(busy_month.index, busy_month.values, color='m')
+            plt.xticks(rotation='vertical')
+            st.pyplot(fig)
+
+        # heatmap over a time period
+        st.title("Weekly Activity Map")
+        user_heatmap = helper.periods_activity_heatmap(selected_user, df)
+        fig, ax = plt.subplots()
+        cmap = sns.cm.rocket_r
+        ax = sns.heatmap(user_heatmap, cmap=cmap)
+        st.pyplot(fig)
 
         # finding busiest users in the group
         if selected_user == 'All':

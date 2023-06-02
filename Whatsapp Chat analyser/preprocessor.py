@@ -34,12 +34,26 @@ def preprocess(data):
 
     # creating month name column
     df['month'] = df['date'].dt.month_name()
+    df['month_num'] = df['date'].dt.month
 
     # creating day column
+    df['day_name'] = df['date'].dt.day_name()
     df['day'] = df['date'].dt.day
+    df['only_date'] = df['date'].dt.date
 
     # creating hour and minute column
     df['hour'] = df['date'].dt.hour
     df['minute'] = df['date'].dt.minute
+
+    # periods
+    period = []
+    for hour in df[['day_name', 'hour']]['hour']:
+        if hour == 23:
+            period.append(str(hour) + "-" + str('00'))
+        elif hour == 0:
+            period.append(str('00') + "-" + str(hour + 1))
+        else:
+            period.append(str(hour) + "-" + str(hour + 1))
+    df['period'] = period
 
     return df
